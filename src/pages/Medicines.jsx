@@ -1,36 +1,142 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 function Medicines() {
+  const API =
+    "https://pharmacy-pos-backend-some.onrender.com";
+
+  const [medicines, setMedicines] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
-  const [medicines, setMedicines] = useState([
-    {
-      id: 1,
-      name: "Paracetamol",
-      category: "Tablet",
-      stock: 120,
-      price: 500,
-    },
-    {
-      id: 2,
-      name: "Amoxicillin",
-      category: "Capsule",
-      stock: 15,
-      price: 1200,
-    },
-  ]);
+  const [formData, setFormData] = useState({
+    name: "",
+    barcode: "",
+    description: "",
+    price: "",
+    stock: "",
+    expire_date: "",
+  });
+
+  const fetchMedicines = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(
+        `${API}/medicines`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setMedicines(res.data.data || []);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMedicines();
+  }, []);
+
+  const handleAddMedicine = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (
+        !formData.name ||
+        !formData.barcode ||
+        !formData.description ||
+        !formData.price ||
+        !formData.stock ||
+        !formData.expire_date
+      ) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      const payload = {
+        name: formData.name.trim(),
+        barcode: formData.barcode.trim(),
+        description: formData.description.trim(),
+        price: Number(formData.price),
+        stock: Number(formData.stock),
+        expire_date: `${formData.expire_date}T00:00:00Z`,
+      };
+
+      console.log("Sending:", payload);
+
+      await axios.post(
+        `${API}/medicines`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      alert("Medicine added successfully");
+
+      setShowModal(false);
+
+      setFormData({
+        name: "",
+        barcode: "",
+        description: "",
+        price: "",
+        stock: "",
+        expire_date: "",
+      });
+
+      fetchMedicines();
+    } catch (error) {
+      console.log(error);
+
+      alert(
+        error.response?.data?.message ||
+          JSON.stringify(error.response?.data) ||
+          "Failed to add medicine"
+      );
+    }
+  };
+
+  const deleteMedicine = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.delete(
+        `${API}/medicines/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchMedicines();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
-    <>
+    <div className="medicines-page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Medicines</h1>
+          <h1 className="page-title">
+            Medicines
+          </h1>
+
           <p className="page-subtitle">
-            Manage pharmacy inventory and stock
+            Manage pharmacy inventory
           </p>
         </div>
 
         <button
-          className="primary-btn"
+          className="add-btn"
           onClick={() => setShowModal(true)}
         >
           + Add Medicine
@@ -38,45 +144,73 @@ function Medicines() {
       </div>
 
       <div className="table-card">
-        <table className="data-table">
+        <table className="medicine-table">
           <thead>
             <tr>
               <th>Name</th>
-              <th>Category</th>
+              <th>Barcode</th>
+              <th>Description</th>
               <th>Stock</th>
               <th>Price</th>
-              <th>Status</th>
+              <th>Expiry Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {medicines.map((medicine) => (
-              <tr key={medicine.id}>
-                <td>{medicine.name}</td>
-                <td>{medicine.category}</td>
-                <td>{medicine.stock}</td>
-                <td>₦{medicine.price}</td>
-
-                <td>
-                  {medicine.stock > 20 ? (
-                    <span className="status-badge success">
-                      In Stock
-                    </span>
-                  ) : (
-                    <span className="status-badge danger">
-                      Low Stock
-                    </span>
-                  )}
+            {medicines.length === 0 ? (
+              <tr>
+                <td colSpan="7">
+                  No medicines found
                 </td>
               </tr>
-            ))}
+            ) : (
+              medicines.map((medicine) => (
+                <tr key={medicine.ID}>
+                  <td>{medicine.name}</td>
+
+                  <td>{medicine.barcode}</td>
+
+                  <td>{medicine.description}</td>
+
+                  <td>{medicine.stock}</td>
+
+                  <td>
+                    ₦
+                    {Number(
+                      medicine.price || 0
+                    ).toLocaleString()}
+                  </td>
+
+                  <td>
+                    {medicine.expire_date
+                      ? new Date(
+                          medicine.expire_date
+                        ).toLocaleDateString()
+                      : "-"}
+                  </td>
+
+                  <td>
+                    <button
+                      className="delete-btn"
+                      onClick={() =>
+                        deleteMedicine(
+                          medicine.ID
+                        )
+                      }
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       {showModal && (
         <div className="modal-overlay">
-
           <div className="modal">
 
             <div className="modal-header">
@@ -84,60 +218,114 @@ function Medicines() {
 
               <button
                 className="close-btn"
-                onClick={() => setShowModal(false)}
+                onClick={() =>
+                  setShowModal(false)
+                }
               >
-                ✕
+                ×
               </button>
             </div>
 
             <div className="modal-body">
 
               <input
-                type="text"
+                className="modal-input"
                 placeholder="Medicine Name"
-                className="modal-input"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    name: e.target.value,
+                  })
+                }
               />
 
               <input
-                type="text"
-                placeholder="Category"
                 className="modal-input"
+                placeholder="Barcode"
+                value={formData.barcode}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    barcode: e.target.value,
+                  })
+                }
+              />
+
+              <textarea
+                className="modal-input"
+                placeholder="Description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    description: e.target.value,
+                  })
+                }
               />
 
               <input
-                type="number"
-                placeholder="Stock"
                 className="modal-input"
-              />
-
-              <input
                 type="number"
                 placeholder="Price"
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    price: e.target.value,
+                  })
+                }
+              />
+
+              <input
                 className="modal-input"
+                type="number"
+                placeholder="Stock"
+                value={formData.stock}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    stock: e.target.value,
+                  })
+                }
+              />
+
+              <input
+                className="modal-input"
+                type="date"
+                value={formData.expire_date}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    expire_date: e.target.value,
+                  })
+                }
               />
 
             </div>
 
             <div className="modal-footer">
-
               <button
                 className="cancel-btn"
-                onClick={() => setShowModal(false)}
+                onClick={() =>
+                  setShowModal(false)
+                }
               >
                 Cancel
               </button>
 
-              <button className="save-btn">
+              <button
+                className="save-btn"
+                onClick={handleAddMedicine}
+              >
                 Save Medicine
               </button>
-
             </div>
 
           </div>
-
         </div>
       )}
-    </>
+    </div>
   );
 }
 
