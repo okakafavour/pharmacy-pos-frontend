@@ -1062,3 +1062,59 @@ backdrop-filter: blur(10px);
   border-radius: 10px;
   cursor: pointer;
 }
+/* ==========================
+   MEDICINES IMPROVEMENTS
+========================== */
+
+.table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.table-search {
+  width: 320px;
+  padding: 12px 15px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  outline: none;
+}
+
+.table-search:focus {
+  border-color: #2563eb;
+}
+
+.stock-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stock-badge.good {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.stock-badge.low {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.edit-btn {
+  border: none;
+  background: #0ea5e9;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  opacity: 0.9;
+}
+
+.delete-btn:hover {
+  opacity: 0.9;
+}

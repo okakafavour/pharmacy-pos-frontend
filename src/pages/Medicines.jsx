@@ -7,6 +7,7 @@ function Medicines() {
 
   const [medicines, setMedicines] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -65,8 +66,6 @@ function Medicines() {
         expire_date: `${formData.expire_date}T00:00:00Z`,
       };
 
-      console.log("Sending:", payload);
-
       await axios.post(
         `${API}/medicines`,
         payload,
@@ -119,8 +118,19 @@ function Medicines() {
       fetchMedicines();
     } catch (error) {
       console.log(error);
+      alert("Failed to delete medicine");
     }
   };
+
+  const filteredMedicines = medicines.filter(
+    (medicine) =>
+      medicine.name
+        ?.toLowerCase()
+        .includes(search.toLowerCase()) ||
+      medicine.barcode
+        ?.toLowerCase()
+        .includes(search.toLowerCase())
+  );
 
   return (
     <div className="medicines-page">
@@ -144,6 +154,19 @@ function Medicines() {
       </div>
 
       <div className="table-card">
+
+        <div className="table-toolbar">
+          <input
+            type="text"
+            className="table-search"
+            placeholder="Search medicine..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+          />
+        </div>
+
         <table className="medicine-table">
           <thead>
             <tr>
@@ -158,53 +181,77 @@ function Medicines() {
           </thead>
 
           <tbody>
-            {medicines.length === 0 ? (
+
+            {filteredMedicines.length === 0 ? (
               <tr>
                 <td colSpan="7">
                   No medicines found
                 </td>
               </tr>
             ) : (
-              medicines.map((medicine) => (
-                <tr key={medicine.ID}>
-                  <td>{medicine.name}</td>
+              filteredMedicines.map(
+                (medicine) => (
+                  <tr key={medicine.ID}>
+                    <td>{medicine.name}</td>
 
-                  <td>{medicine.barcode}</td>
+                    <td>
+                      {medicine.barcode}
+                    </td>
 
-                  <td>{medicine.description}</td>
+                    <td>
+                      {medicine.description}
+                    </td>
 
-                  <td>{medicine.stock}</td>
+                    <td>
+                      <span
+                        className={
+                          medicine.stock <= 5
+                            ? "stock-badge low"
+                            : "stock-badge good"
+                        }
+                      >
+                        {medicine.stock}
+                      </span>
+                    </td>
 
-                  <td>
-                    ₦
-                    {Number(
-                      medicine.price || 0
-                    ).toLocaleString()}
-                  </td>
+                    <td>
+                      ₦
+                      {Number(
+                        medicine.price || 0
+                      ).toLocaleString()}
+                    </td>
 
-                  <td>
-                    {medicine.expire_date
-                      ? new Date(
-                          medicine.expire_date
-                        ).toLocaleDateString()
-                      : "-"}
-                  </td>
+                    <td>
+                      {medicine.expire_date
+                        ? new Date(
+                            medicine.expire_date
+                          ).toLocaleDateString()
+                        : "-"}
+                    </td>
 
-                  <td>
-                    <button
-                      className="delete-btn"
-                      onClick={() =>
-                        deleteMedicine(
-                          medicine.ID
-                        )
-                      }
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
+                    <td>
+                      <button
+                        className="delete-btn"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Delete ${medicine.name}?`
+                            )
+                          ) {
+                            deleteMedicine(
+                              medicine.ID
+                            );
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                )
+              )
             )}
+
           </tbody>
         </table>
       </div>
@@ -305,6 +352,7 @@ function Medicines() {
             </div>
 
             <div className="modal-footer">
+
               <button
                 className="cancel-btn"
                 onClick={() =>
@@ -320,6 +368,7 @@ function Medicines() {
               >
                 Save Medicine
               </button>
+
             </div>
 
           </div>
