@@ -9,6 +9,7 @@ function Sidebar() {
     { name: "Customers", path: "/customers", icon: "👥" },
     { name: "Sales", path: "/sales", icon: "🛒" },
     { name: "Suppliers", path: "/suppliers", icon: "🚚" },
+    { name: "Restocks", path: "/restocks", icon: "📦" },
     { name: "Reports", path: "/reports", icon: "📈" },
     { name: "Users", path: "/users", icon: "⚙️" },
   ];

@@ -7,6 +7,7 @@ import Customers from "./pages/Customers";
 import Sales from "./pages/Sales";
 import Supplier from "./pages/Supplier";
 import Reports from "./pages/Reports";
+import Restocks from "./pages/Restock";
 
 import DashboardLayout from "./layouts/DashboardLayout";
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/sales" element={<Sales />} />
           <Route path="/suppliers" element={<Supplier />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/restocks" element={<Restocks />} />
         </Route>
 
       </Routes>
