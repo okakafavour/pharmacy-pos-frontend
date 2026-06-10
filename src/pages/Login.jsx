@@ -18,10 +18,38 @@ function Login() {
         }
       );
 
-      localStorage.setItem("token", res.data.token);
+      // Save auth data
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
+
+      localStorage.setItem(
+        "role",
+        res.data.user.role
+      );
+
+      localStorage.setItem(
+        "name",
+        res.data.user.name
+      );
+
+      localStorage.setItem(
+        "email",
+        res.data.user.email
+      );
+
+      localStorage.setItem(
+        "userId",
+        res.data.user.id
+      );
+
       navigate("/dashboard");
     } catch (err) {
-      alert("Login Failed");
+      alert(
+        err.response?.data?.error ||
+          "Login Failed"
+      );
       console.log(err);
     }
   };
@@ -69,7 +97,9 @@ function Login() {
 
           <div className="logo-area">
             <h2>💊 Mdawa</h2>
-            <span>PHARMACY MANAGEMENT SYSTEM</span>
+            <span>
+              PHARMACY MANAGEMENT SYSTEM
+            </span>
           </div>
 
           <div className="tabs">
@@ -87,7 +117,8 @@ function Login() {
           </h1>
 
           <p>
-            Sign in to your Mdawa account to continue
+            Sign in to your Mdawa account to
+            continue
           </p>
 
           <div className="roles">
@@ -127,7 +158,9 @@ function Login() {
             type="email"
             placeholder="Enter your email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
           />
 
           <label className="login-label">
@@ -139,7 +172,14 @@ function Login() {
             type="password"
             placeholder="Enter your password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) =>
+              setPassword(e.target.value)
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleLogin();
+              }
+            }}
           />
 
           <button

@@ -1,12 +1,15 @@
 function Header() {
-  const user = JSON.parse(localStorage.getItem("user")) || {
-    name: "Admin",
-    role: "Administrator",
+  const user = {
+    name: localStorage.getItem("name") || "Admin",
+    role: localStorage.getItem("role") || "Administrator",
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem("name");
+    localStorage.removeItem("role");
+    localStorage.removeItem("email");
+    localStorage.removeItem("userId");
 
     window.location.href = "/";
   };
@@ -28,12 +31,14 @@ function Header() {
 
         <div className="user-info">
           <div className="avatar">
-            {user.name.charAt(0)}
+            {user.name.charAt(0).toUpperCase()}
           </div>
 
           <div>
             <h4>{user.name}</h4>
-            <p>{user.role}</p>
+            <p style={{ textTransform: "capitalize" }}>
+              {user.role}
+            </p>
           </div>
         </div>
 
