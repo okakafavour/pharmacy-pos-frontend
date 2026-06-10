@@ -10,6 +10,7 @@ function Sales() {
   const [customers, setCustomers] = useState([]);
   const [medicines, setMedicines] = useState([]);
   const [receipt, setReceipt] = useState(null);
+  const [barcode, setBarcode] = useState("");
   const [showReceipt, setShowReceipt] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
@@ -118,6 +119,27 @@ function Sales() {
       items.filter((_, i) => i !== index)
     );
   };
+
+  const handleBarcodeSearch = () => {
+  if (!barcode.trim()) return;
+
+  const medicine = medicines.find(
+    (m) => m.barcode === barcode.trim()
+  );
+
+  if (!medicine) {
+    alert("Medicine not found");
+    return;
+  }
+
+  setCurrentItem((prev) => ({
+    ...prev,
+    medicine_id: String(medicine.ID),
+    quantity: prev.quantity || "1",
+  })
+);
+  setBarcode("");
+};
 
   const createSale = async () => {
     try {
@@ -377,6 +399,28 @@ const downloadReceipt = async (
                   )
                 )}
               </select>
+
+              <input
+  className="modal-input"
+  type="text"
+  placeholder="Scan Barcode"
+  value={barcode}
+  onChange={(e) =>
+    setBarcode(e.target.value)
+  }
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      handleBarcodeSearch();
+    }
+  }}
+/>
+
+<button
+  className="save-btn"
+  onClick={handleBarcodeSearch}
+>
+  Find Medicine
+</button>
 
               <hr />
 
