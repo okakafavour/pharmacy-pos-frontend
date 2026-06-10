@@ -9,6 +9,8 @@ function Sales() {
   const [sales, setSales] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [medicines, setMedicines] = useState([]);
+  const [receipt, setReceipt] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
 
@@ -164,14 +166,76 @@ function Sales() {
     }
   };
 
+  const viewReceipt = async (saleId) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(
+      `${API}/sales/${saleId}/receipt`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setReceipt(res.data.receipt);
+    setShowReceipt(true);
+  } catch (error) {
+    console.log(error);
+    alert("Failed to load receipt");
+  }
+};
+
+const downloadReceipt = async (
+  saleId
+) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await axios.get(
+      `${API}/receipt/${saleId}/pdf`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: "blob",
+      }
+    );
+
+    const url =
+      window.URL.createObjectURL(
+        new Blob([response.data])
+      );
+
+    const link =
+      document.createElement("a");
+
+    link.href = url;
+
+    link.setAttribute(
+      "download",
+      `receipt-${saleId}.pdf`
+    );
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+  } catch (error) {
+    console.log(error);
+    alert(
+      "Failed to download receipt"
+    );
+  }
+}; 
   return (
+  <>
     <div className="sales-page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">
-            Sales
-          </h1>
-
+          <h1 className="page-title">Sales</h1>
           <p className="page-subtitle">
             Manage pharmacy sales
           </p>
@@ -195,64 +259,75 @@ function Sales() {
               <th>Quantity</th>
               <th>Total</th>
               <th>Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {sales.length === 0 ? (
               <tr>
-                <td colSpan="6">
+                <td colSpan="7">
                   No sales found
                 </td>
               </tr>
             ) : (
               sales.flatMap((sale) =>
-                sale.sale_items?.map(
-                  (item) => (
-                    <tr
-                      key={`${sale.ID}-${item.ID}`}
-                    >
-                      <td>
-                        {sale.ID}
-                      </td>
+                sale.sale_items?.map((item) => (
+                  <tr
+                    key={`${sale.ID}-${item.ID}`}
+                  >
+                    <td>{sale.ID}</td>
 
-                      <td>
-                        {
-                          sale.customer
-                            ?.name
-                        }
-                      </td>
+                    <td>
+                      {sale.customer?.name}
+                    </td>
 
-                      <td>
-                        {
-                          item
-                            .medicine
-                            ?.name
-                        }
-                      </td>
+                    <td>
+                      {item.medicine?.name}
+                    </td>
 
-                      <td>
-                        {
-                          item.quantity
-                        }
-                      </td>
+                    <td>{item.quantity}</td>
 
-                      <td>
-                        ₦
-                        {Number(
-                          sale.total ||
-                            0
-                        ).toLocaleString()}
-                      </td>
+                    <td>
+                      ₦
+                      {Number(
+                        sale.total || 0
+                      ).toLocaleString()}
+                    </td>
 
-                      <td>
-                        {new Date(
-                          sale.CreatedAt
-                        ).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  )
-                )
+                    <td>
+                      {new Date(
+                        sale.CreatedAt
+                      ).toLocaleDateString()}
+                    </td>
+
+                    <td>
+                      <div className="sales-actions">
+                        <button
+                          className="receipt-btn"
+                          onClick={() =>
+                            viewReceipt(
+                              sale.ID
+                            )
+                          }
+                        >
+                          Receipt
+                        </button>
+
+                        <button
+                          className="pdf-btn"
+                          onClick={() =>
+                            downloadReceipt(
+                              sale.ID
+                            )
+                          }
+                        >
+                          PDF
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )
             )}
           </tbody>
@@ -262,7 +337,6 @@ function Sales() {
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
-
             <div className="modal-header">
               <h2>Create Sale</h2>
 
@@ -277,7 +351,6 @@ function Sales() {
             </div>
 
             <div className="modal-body">
-
               <select
                 className="modal-input"
                 value={customerId}
@@ -332,8 +405,7 @@ function Sales() {
                         medicine.ID
                       }
                     >
-                      {medicine.name}
-                      {" - ₦"}
+                      {medicine.name} - ₦
                       {medicine.price}
                     </option>
                   )
@@ -418,11 +490,9 @@ function Sales() {
                   );
                 }
               )}
-
             </div>
 
             <div className="modal-footer">
-
               <button
                 className="cancel-btn"
                 onClick={() =>
@@ -438,13 +508,62 @@ function Sales() {
               >
                 Complete Sale
               </button>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {showReceipt && receipt && (
+        <div className="modal-overlay">
+          <div className="receipt-modal">
+            <div className="modal-header">
+              <h2>Pharmacy Receipt</h2>
+
+              <button
+                className="close-btn"
+                onClick={() =>
+                  setShowReceipt(false)
+                }
+              >
+                ×
+              </button>
             </div>
 
+            <div className="modal-body">
+              <p>
+                <strong>
+                  Receipt ID:
+                </strong>{" "}
+                {receipt.receipt_id}
+              </p>
+
+              <p>
+                <strong>
+                  Customer:
+                </strong>{" "}
+                {receipt.customer}
+              </p>
+
+              <p>
+                <strong>
+                  Cashier:
+                </strong>{" "}
+                {receipt.cashier}
+              </p>
+
+              <p>
+                <strong>Date:</strong>{" "}
+                {new Date(
+                  receipt.date
+                ).toLocaleString()}
+              </p>
+            </div>
           </div>
         </div>
       )}
     </div>
-  );
+  </>
+);
 }
+
 export default Sales;

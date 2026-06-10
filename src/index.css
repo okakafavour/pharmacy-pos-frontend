@@ -1878,3 +1878,48 @@ body {
 .stat-card {
   transition: 0.3s;
 }
+
+.sales-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.receipt-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.receipt-btn:hover {
+  opacity: 0.9;
+}
+
+.pdf-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pdf-btn:hover {
+  opacity: 0.9;
+}
+
+.receipt-modal {
+  background: white;
+  width: 600px;
+  max-width: 95%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.receipt-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
