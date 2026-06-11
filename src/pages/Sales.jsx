@@ -1,5 +1,7 @@
 
 import { useEffect, useState } from "react";
+import { useZxing } from "react-zxing";
+// import BarcodeScanner from "../components/BarcodeScanner";
 import axios from "axios";
 
 function Sales() {
@@ -11,6 +13,7 @@ function Sales() {
   const [medicines, setMedicines] = useState([]);
   const [receipt, setReceipt] = useState(null);
   const [barcode, setBarcode] = useState("");
+  const [showScanner, setShowScanner] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
@@ -252,6 +255,43 @@ const downloadReceipt = async (
     );
   }
 }; 
+
+const { ref } = useZxing({
+  paused: !showScanner,
+
+  onDecodeResult(result) {
+    const scannedCode = result.rawValue;
+
+    console.log("SCANNED:", scannedCode);
+
+    setBarcode(scannedCode);
+
+    const medicine = medicines.find(
+      (m) =>
+        String(m.barcode).trim() ===
+        String(scannedCode).trim()
+    );
+
+    if (medicine) {
+      setCurrentItem({
+        medicine_id: String(medicine.ID),
+        quantity: "1",
+      });
+
+      setShowScanner(false);
+    } else {
+      alert(
+        `Medicine not found: ${scannedCode}`
+      );
+    }
+  },
+
+  onError(error) {
+    console.error(error);
+  },
+});
+
+
   return (
   <>
     <div className="sales-page">
@@ -417,6 +457,13 @@ const downloadReceipt = async (
 
 <button
   className="save-btn"
+  onClick={() => setShowScanner(true)}
+>
+  Open Camera Scanner
+</button>
+
+<button
+  className="save-btn"
   onClick={handleBarcodeSearch}
 >
   Find Medicine
@@ -556,6 +603,59 @@ const downloadReceipt = async (
           </div>
         </div>
       )}
+
+      {showScanner && (
+       <div className="modal-overlay">
+         <div
+          className="modal"
+          style={{ maxWidth: "700px" }}
+        >
+      <div className="modal-header">
+        <h2>Scan Barcode</h2>
+
+        <button
+          className="close-btn"
+          onClick={() => setShowScanner(false)}
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="modal-body">
+        <p
+          style={{
+            color: "green",
+            marginBottom: "10px",
+          }}
+        >
+          Scanner Started
+        </p>
+
+        <p
+          style={{
+            marginBottom: "10px",
+          }}
+        >
+          Barcode: {barcode || "Waiting..."}
+        </p>
+
+        <video
+          ref={ref}
+          autoPlay
+          playsInline
+          muted
+          style={{
+            width: "100%",
+            height: "400px",
+            objectFit: "cover",
+            borderRadius: "10px",
+            border: "2px solid #ddd",
+          }}
+        />
+      </div>
+    </div>
+  </div>
+)}
 
       {showReceipt && receipt && (
         <div className="modal-overlay">
