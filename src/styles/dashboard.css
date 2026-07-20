@@ -1,0 +1,391 @@
+/* ==========================================
+   DASHBOARD PAGE
+========================================== */
+
+.dashboard-page{
+    display:flex;
+    flex-direction:column;
+    gap:30px;
+}
+
+/* ==========================================
+   PAGE TITLE
+========================================== */
+
+.dashboard-title{
+    font-size:32px;
+    font-weight:700;
+    color:#0f172a;
+}
+
+.dashboard-subtitle{
+    color:#64748b;
+    margin-top:6px;
+}
+
+/* ==========================================
+   QUICK ACTIONS
+========================================== */
+
+.dashboard-actions{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:20px;
+}
+
+.action-btn{
+    border:none;
+    cursor:pointer;
+
+    background:#2563eb;
+    color:#fff;
+
+    border-radius:14px;
+
+    padding:18px;
+
+    font-size:16px;
+    font-weight:600;
+
+    transition:.3s;
+
+    box-shadow:0 10px 20px rgba(37,99,235,.15);
+}
+
+.action-btn:hover{
+
+    transform:translateY(-4px);
+
+    background:#1d4ed8;
+
+}
+
+/* ==========================================
+   STATISTICS
+========================================== */
+
+.stats-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    gap:22px;
+
+}
+
+.stat-card{
+
+    background:#fff;
+
+    border-radius:16px;
+
+    padding:25px;
+
+    box-shadow:0 10px 30px rgba(15,23,42,.06);
+
+    transition:.3s;
+
+    border:1px solid #eef2f7;
+
+}
+
+.stat-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 20px 40px rgba(15,23,42,.12);
+
+}
+
+.stat-card h3{
+
+    font-size:15px;
+
+    color:#64748b;
+
+    margin-bottom:15px;
+
+}
+
+.stat-card p{
+
+    font-size:34px;
+
+    font-weight:700;
+
+    color:#0f172a;
+
+}
+
+.clickable{
+
+    cursor:pointer;
+
+}
+
+/* ==========================================
+   ALERTS
+========================================== */
+
+.dashboard-alerts{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+.alert-card{
+
+    background:#fff;
+
+    padding:18px 22px;
+
+    border-radius:14px;
+
+    border-left:6px solid;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.05);
+
+}
+
+.alert-card h4{
+
+    margin-bottom:8px;
+
+    font-size:17px;
+
+}
+
+.alert-card p{
+
+    color:#475569;
+
+    line-height:1.6;
+
+}
+
+/* ==========================================
+   ALERT COLORS
+========================================== */
+
+.success{
+
+    border-color:#16a34a;
+
+}
+
+.warning{
+
+    border-color:#f59e0b;
+
+}
+
+.danger{
+
+    border-color:#ef4444;
+
+}
+
+.info{
+
+    border-color:#3b82f6;
+
+}
+
+/* ==========================================
+   DASHBOARD WIDGET GRID
+========================================== */
+
+.dashboard-widgets{
+
+    display:grid;
+
+    grid-template-columns:2fr 1fr;
+
+    gap:25px;
+
+}
+
+.widget{
+
+    background:#fff;
+
+    border-radius:16px;
+
+    padding:25px;
+
+    box-shadow:0 10px 30px rgba(15,23,42,.06);
+
+}
+
+.widget-title{
+
+    font-size:18px;
+
+    font-weight:600;
+
+    margin-bottom:20px;
+
+}
+
+/* ==========================================
+   RECENT TABLE
+========================================== */
+
+.recent-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+.recent-table th{
+
+    text-align:left;
+
+    padding:14px;
+
+    background:#f8fafc;
+
+    color:#64748b;
+
+    font-size:14px;
+
+}
+
+.recent-table td{
+
+    padding:14px;
+
+    border-bottom:1px solid #eef2f7;
+
+}
+
+.recent-table tr:hover{
+
+    background:#f8fafc;
+
+}
+
+/* ==========================================
+   SMALL BADGES
+========================================== */
+
+.status-badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:6px 12px;
+
+    border-radius:50px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+.status-success{
+
+    background:#dcfce7;
+
+    color:#15803d;
+
+}
+
+.status-warning{
+
+    background:#fef3c7;
+
+    color:#b45309;
+
+}
+
+.status-danger{
+
+    background:#fee2e2;
+
+    color:#b91c1c;
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width:992px){
+
+.dashboard-widgets{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+@media (max-width:768px){
+
+.dashboard-page{
+
+gap:20px;
+
+}
+
+.dashboard-title{
+
+font-size:26px;
+
+}
+
+.dashboard-actions{
+
+grid-template-columns:1fr;
+
+}
+
+.stats-grid{
+
+grid-template-columns:1fr;
+
+}
+
+.stat-card{
+
+padding:20px;
+
+}
+
+.stat-card p{
+
+font-size:28px;
+
+}
+
+}
+
+@media (max-width:480px){
+
+.alert-card{
+
+padding:16px;
+
+}
+
+.action-btn{
+
+padding:16px;
+
+font-size:15px;
+
+}
+
+}

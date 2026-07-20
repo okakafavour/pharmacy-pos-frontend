@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
+import "../styles/sidebar.css";
 
-function Sidebar() {
+function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const location = useLocation();
 
   const role = localStorage.getItem("role");
@@ -46,60 +47,73 @@ function Sidebar() {
   }
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-logo">
-        <h2>💊 Mdawa</h2>
-        <span>Pharmacy System</span>
-      </div>
+    <>
+      {/* Dark Overlay */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      <nav className="sidebar-menu">
-        {menuItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={
-              location.pathname === item.path
-                ? "sidebar-link active"
-                : "sidebar-link"
-            }
-          >
-            <span>{item.icon}</span>
-            {item.name}
-          </Link>
-        ))}
-      </nav>
-
-      <div
-        style={{
-          marginTop: "auto",
-          padding: "20px",
-          borderTop: "1px solid rgba(255,255,255,0.1)",
-        }}
+      <aside
+        className={`sidebar ${sidebarOpen ? "open" : ""}`}
       >
-        <small
-          style={{
-            display: "block",
-            color: "#999",
-          }}
-        >
-          Logged in as
-        </small>
+        <div className="sidebar-logo">
+          <h2>💊 Mdawa</h2>
+          <span>Pharmacy System</span>
+        </div>
 
-        <strong>
-          {localStorage.getItem("name")}
-        </strong>
+        <nav className="sidebar-menu">
+          {menuItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={
+                location.pathname === item.path
+                  ? "sidebar-link active"
+                  : "sidebar-link"
+              }
+              onClick={() => setSidebarOpen(false)}
+            >
+              <span>{item.icon}</span>
+              {item.name}
+            </Link>
+          ))}
+        </nav>
 
         <div
           style={{
-            textTransform: "capitalize",
-            color: "#4caf50",
-            marginTop: "5px",
+            marginTop: "auto",
+            padding: "20px",
+            borderTop: "1px solid rgba(255,255,255,.1)",
           }}
         >
-          {role}
+          <small
+            style={{
+              display: "block",
+              color: "#94a3b8",
+            }}
+          >
+            Logged in as
+          </small>
+
+          <strong>
+            {localStorage.getItem("name")}
+          </strong>
+
+          <div
+            style={{
+              color: "#22c55e",
+              textTransform: "capitalize",
+              marginTop: 6,
+            }}
+          >
+            {role}
+          </div>
         </div>
-      </div>
-    </div>
+      </aside>
+    </>
   );
 }
 

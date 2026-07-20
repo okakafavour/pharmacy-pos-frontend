@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "../styles/medicines.css";
 
 function Medicines() {
   const API =
@@ -156,22 +157,23 @@ function Medicines() {
       <div className="table-card">
 
         <div className="table-toolbar">
-          <input
-            type="text"
-            className="table-search"
-            placeholder="Search medicine..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-          />
+          <div className="search-wrapper">
+            <span className="search-icon">🔍</span>
+
+            <input
+              type="text"
+              className="table-search"
+              placeholder="Search medicines..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
 
         <table className="medicine-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Barcode</th>
+              <th>Medicine</th>
               <th>Description</th>
               <th>Stock</th>
               <th>Price</th>
@@ -192,10 +194,17 @@ function Medicines() {
               filteredMedicines.map(
                 (medicine) => (
                   <tr key={medicine.ID}>
-                    <td>{medicine.name}</td>
-
                     <td>
-                      {medicine.barcode}
+                      <div className="medicine-name">
+                        <div className="medicine-avatar">
+                          💊
+                        </div>
+
+                        <div>
+                          <strong>{medicine.name}</strong>
+                          <small>{medicine.barcode}</small>
+                        </div>
+                      </div>
                     </td>
 
                     <td>
@@ -214,39 +223,32 @@ function Medicines() {
                       </span>
                     </td>
 
-                    <td>
-                      ₦
-                      {Number(
-                        medicine.price || 0
-                      ).toLocaleString()}
-                    </td>
+                   <td className="price">
+                      ₦{Number(medicine.price || 0).toLocaleString()}
+                   </td>
 
-                    <td>
+                    <td className="expiry-date">
                       {medicine.expire_date
-                        ? new Date(
-                            medicine.expire_date
-                          ).toLocaleDateString()
-                        : "-"}
+                        ? new Date(medicine.expire_date).toLocaleDateString()
+                        : "--"}
                     </td>
 
-                    <td>
+                    <div className="action-group">
+                      <button className="edit-btn">
+                        ✏️
+                      </button>
+
                       <button
                         className="delete-btn"
                         onClick={() => {
-                          if (
-                            window.confirm(
-                              `Delete ${medicine.name}?`
-                            )
-                          ) {
-                            deleteMedicine(
-                              medicine.ID
-                            );
+                          if (window.confirm(`Delete ${medicine.name}?`)) {
+                            deleteMedicine(medicine.ID);
                           }
                         }}
                       >
-                        Delete
+                        🗑️
                       </button>
-                    </td>
+                    </div>
                   </tr>
                 )
               )
@@ -261,7 +263,7 @@ function Medicines() {
           <div className="modal">
 
             <div className="modal-header">
-              <h2>Add Medicine</h2>
+              <h2>💊 Add New Medicine</h2>
 
               <button
                 className="close-btn"
@@ -276,7 +278,7 @@ function Medicines() {
             <div className="modal-body">
 
               <input
-                className="modal-input"
+                className="modal-input modal-textarea"
                 placeholder="Medicine Name"
                 value={formData.name}
                 onChange={(e) =>

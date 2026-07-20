@@ -1,0 +1,46 @@
+/* ==========================
+   MAIN LAYOUT
+========================== */
+
+.layout{
+    display:flex;
+    min-height:100vh;
+    background:#f8fafc;
+}
+
+/* ==========================
+   SIDEBAR
+========================== */
+
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    width:260px;
+    height:100vh;
+    overflow-y:auto;
+    z-index:1000;
+}
+
+/* ==========================
+   MAIN CONTENT
+========================== */
+
+.main-content{
+    margin-left:260px;
+    width:calc(100% - 260px);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+/* ==========================
+   PAGE CONTENT
+========================== */
+
+.page-content{
+    margin-top:75px;
+    padding:30px;
+    flex:1;
+    overflow-y:auto;
+}

@@ -1,0 +1,374 @@
+/* ==========================================
+   REPORTS PAGE
+========================================== */
+
+.reports-page{
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+}
+
+/* ==========================================
+   ACTION BUTTONS
+========================================== */
+
+.report-actions{
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+
+/* ==========================================
+   REPORT GRID
+========================================== */
+
+.reports-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:20px;
+}
+
+/* ==========================================
+   REPORT CARD
+========================================== */
+
+.report-card{
+
+    background:#ffffff;
+
+    border-radius:16px;
+
+    padding:24px;
+
+    box-shadow:0 10px 30px rgba(15,23,42,.05);
+
+    border:1px solid #eef2f7;
+
+    transition:.3s;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+.report-card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 18px 40px rgba(15,23,42,.10);
+
+}
+
+.report-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+
+    height:5px;
+
+}
+
+/* ==========================================
+   CARD COLORS
+========================================== */
+
+.report-card.revenue::before{
+    background:#2563eb;
+}
+
+.report-card.medicines::before{
+    background:#0ea5e9;
+}
+
+.report-card.suppliers::before{
+    background:#16a34a;
+}
+
+.report-card.warning::before{
+    background:#f59e0b;
+}
+
+.report-card.danger::before{
+    background:#ef4444;
+}
+
+/* ==========================================
+   ICON
+========================================== */
+
+.report-icon{
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:50%;
+
+    background:#f8fafc;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:28px;
+
+    margin-bottom:18px;
+
+}
+
+/* ==========================================
+   TEXT
+========================================== */
+
+.report-card h3{
+
+    font-size:15px;
+
+    color:#64748b;
+
+    font-weight:600;
+
+    margin-bottom:10px;
+
+}
+
+.report-card h2{
+
+    font-size:34px;
+
+    font-weight:700;
+
+    color:#1e293b;
+
+    margin-bottom:10px;
+
+}
+
+.report-card small{
+
+    color:#94a3b8;
+
+    font-size:14px;
+
+}
+
+/* ==========================================
+   TABLE HEADER
+========================================== */
+
+.table-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+
+}
+
+.table-header h2{
+
+    font-size:22px;
+
+    font-weight:700;
+
+    color:#1e293b;
+
+}
+
+.table-badge{
+
+    background:#dbeafe;
+
+    color:#2563eb;
+
+    padding:8px 16px;
+
+    border-radius:30px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+/* ==========================================
+   PRIMARY BUTTON
+========================================== */
+
+.primary-btn{
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:8px;
+
+    padding:12px 22px;
+
+    background:#2563eb;
+
+    color:#fff;
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    box-shadow:0 10px 25px rgba(37,99,235,.18);
+
+}
+
+.primary-btn:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+}
+
+/* ==========================================
+   SECONDARY BUTTON
+========================================== */
+
+.secondary-btn{
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:8px;
+
+    padding:12px 22px;
+
+    background:#fff;
+
+    color:#334155;
+
+    border:1px solid #dbe3ef;
+
+    border-radius:10px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.secondary-btn:hover{
+
+    background:#f8fafc;
+
+    border-color:#2563eb;
+
+    color:#2563eb;
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:992px){
+
+    .reports-grid{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .page-header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:20px;
+
+    }
+
+    .report-actions{
+
+        width:100%;
+
+        display:flex;
+
+        flex-wrap:wrap;
+
+    }
+
+    .report-actions button{
+
+        flex:1;
+
+    }
+
+    .reports-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .table-header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:12px;
+
+    }
+
+}
+
+@media(max-width:480px){
+
+    .report-card{
+
+        padding:20px;
+
+    }
+
+    .report-card h2{
+
+        font-size:28px;
+
+    }
+
+    .report-icon{
+
+        width:52px;
+
+        height:52px;
+
+        font-size:24px;
+
+    }
+
+}

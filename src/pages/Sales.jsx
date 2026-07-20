@@ -1,86 +1,98 @@
-
 import { useEffect, useState } from "react";
-import { useZxing } from "react-zxing";
-// import BarcodeScanner from "../components/BarcodeScanner";
 import axios from "axios";
+import { useZxing } from "react-zxing";
+import "../styles/sales.css";
 
 function Sales() {
-  const API =
-    "https://pharmacy-pos-backend-some.onrender.com";
+  const API = "https://pharmacy-pos-backend-some.onrender.com";
+
+  // ==========================
+  // State
+  // ==========================
 
   const [sales, setSales] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [medicines, setMedicines] = useState([]);
-  const [receipt, setReceipt] = useState(null);
-  const [barcode, setBarcode] = useState("");
+
+  const [search, setSearch] = useState("");
+
+  const [showModal, setShowModal] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
 
-  const [showModal, setShowModal] = useState(false);
+  const [receipt, setReceipt] = useState(null);
+
+  const [barcode, setBarcode] = useState("");
 
   const [customerId, setCustomerId] = useState("");
 
   const [currentItem, setCurrentItem] = useState({
     medicine_id: "",
-    quantity: "",
+    quantity: "1",
   });
 
   const [items, setItems] = useState([]);
 
+  // ==========================
+  // API
+  // ==========================
+
+  const token = localStorage.getItem("token");
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  // ==========================
+  // Fetch Sales
+  // ==========================
+
   const fetchSales = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       const res = await axios.get(
         `${API}/sales`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        config
       );
 
       setSales(res.data.data || []);
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
     }
   };
+
+  // ==========================
+  // Fetch Customers
+  // ==========================
 
   const fetchCustomers = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       const res = await axios.get(
         `${API}/customers`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        config
       );
 
       setCustomers(res.data.data || []);
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
     }
   };
 
+  // ==========================
+  // Fetch Medicines
+  // ==========================
+
   const fetchMedicines = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       const res = await axios.get(
         `${API}/medicines`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        config
       );
 
       setMedicines(res.data.data || []);
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -89,6 +101,67 @@ function Sales() {
     fetchCustomers();
     fetchMedicines();
   }, []);
+
+  // ==========================
+  // Barcode Search
+  // ==========================
+
+  const handleBarcodeSearch = () => {
+    if (!barcode.trim()) return;
+
+    const medicine = medicines.find(
+      (m) =>
+        String(m.barcode).trim() ===
+        String(barcode).trim()
+    );
+
+    if (!medicine) {
+      alert("Medicine not found");
+      return;
+    }
+
+    setCurrentItem({
+      medicine_id: String(medicine.ID),
+      quantity: "1",
+    });
+
+    setBarcode("");
+  };
+
+  // ==========================
+  // Barcode Camera
+  // ==========================
+
+  const { ref } = useZxing({
+    paused: !showScanner,
+
+    onDecodeResult(result) {
+      const code = result.getText
+        ? result.getText()
+        : result.rawValue;
+
+      setBarcode(code);
+
+      const medicine = medicines.find(
+        (m) =>
+          String(m.barcode).trim() ===
+          String(code).trim()
+      );
+
+      if (medicine) {
+        setCurrentItem({
+          medicine_id: String(medicine.ID),
+          quantity: "1",
+        });
+
+        setShowScanner(false);
+      }
+    },
+  });
+
+  // ==========================
+  // Add Item
+  // ==========================
 
   const addItem = () => {
     if (
@@ -99,6 +172,11 @@ function Sales() {
       return;
     }
 
+    const medicine = medicines.find(
+      (m) =>
+        m.ID === Number(currentItem.medicine_id)
+    );
+
     setItems([
       ...items,
       {
@@ -108,14 +186,20 @@ function Sales() {
         quantity: Number(
           currentItem.quantity
         ),
+        name: medicine?.name,
+        price: medicine?.price,
       },
     ]);
 
     setCurrentItem({
       medicine_id: "",
-      quantity: "",
+      quantity: "1",
     });
   };
+
+  // ==========================
+  // Remove Item
+  // ==========================
 
   const removeItem = (index) => {
     setItems(
@@ -123,38 +207,19 @@ function Sales() {
     );
   };
 
-  const handleBarcodeSearch = () => {
-  if (!barcode.trim()) return;
-
-  const medicine = medicines.find(
-    (m) => m.barcode === barcode.trim()
-  );
-
-  if (!medicine) {
-    alert("Medicine not found");
-    return;
-  }
-
-  setCurrentItem((prev) => ({
-    ...prev,
-    medicine_id: String(medicine.ID),
-    quantity: prev.quantity || "1",
-  })
-);
-  setBarcode("");
-};
+  // ==========================
+  // Create Sale
+  // ==========================
 
   const createSale = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       if (!customerId) {
         alert("Select customer");
         return;
       }
 
       if (items.length === 0) {
-        alert("Add at least one medicine");
+        alert("Add at least one item");
         return;
       }
 
@@ -162,193 +227,171 @@ function Sales() {
         `${API}/sales`,
         {
           customer_id: Number(customerId),
-          items,
+          items: items.map((item) => ({
+            medicine_id: item.medicine_id,
+            quantity: item.quantity,
+          })),
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type":
-              "application/json",
+            ...config.headers,
+            "Content-Type": "application/json",
           },
         }
       );
 
-      alert("Sale created successfully");
+      alert("Sale completed");
 
-      setCustomerId("");
       setItems([]);
+      setCustomerId("");
       setShowModal(false);
 
       fetchSales();
       fetchMedicines();
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
 
       alert(
-        error.response?.data?.error ||
+        err.response?.data?.error ||
           "Failed to create sale"
       );
     }
   };
 
-  const viewReceipt = async (saleId) => {
-  try {
-    const token = localStorage.getItem("token");
+  // ==========================
+  // View Receipt
+  // ==========================
 
-    const res = await axios.get(
-      `${API}/sales/${saleId}/receipt`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    setReceipt(res.data.receipt);
-    setShowReceipt(true);
-  } catch (error) {
-    console.log(error);
-    alert("Failed to load receipt");
-  }
-};
-
-const downloadReceipt = async (
-  saleId
-) => {
-  try {
-    const token = localStorage.getItem("token");
-
-    const response = await axios.get(
-      `${API}/receipt/${saleId}/pdf`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        responseType: "blob",
-      }
-    );
-
-    const url =
-      window.URL.createObjectURL(
-        new Blob([response.data])
+  const viewReceipt = async (id) => {
+    try {
+      const res = await axios.get(
+        `${API}/sales/${id}/receipt`,
+        config
       );
 
-    const link =
-      document.createElement("a");
-
-    link.href = url;
-
-    link.setAttribute(
-      "download",
-      `receipt-${saleId}.pdf`
-    );
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    link.remove();
-  } catch (error) {
-    console.log(error);
-    alert(
-      "Failed to download receipt"
-    );
-  }
-}; 
-
-const { ref } = useZxing({
-  paused: !showScanner,
-
-  onDecodeResult(result) {
-    const scannedCode = result.rawValue;
-
-    console.log("SCANNED:", scannedCode);
-
-    setBarcode(scannedCode);
-
-    const medicine = medicines.find(
-      (m) =>
-        String(m.barcode).trim() ===
-        String(scannedCode).trim()
-    );
-
-    if (medicine) {
-      setCurrentItem({
-        medicine_id: String(medicine.ID),
-        quantity: "1",
-      });
-
-      setShowScanner(false);
-    } else {
-      alert(
-        `Medicine not found: ${scannedCode}`
-      );
+      setReceipt(res.data.receipt);
+      setShowReceipt(true);
+    } catch (err) {
+      console.log(err);
     }
-  },
+  };
 
-  onError(error) {
-    console.error(error);
-  },
-});
+  // ==========================
+  // Download Receipt
+  // ==========================
 
+  const downloadReceipt = async (id) => {
+    try {
+      const res = await axios.get(
+        `${API}/receipt/${id}/pdf`,
+        {
+          ...config,
+          responseType: "blob",
+        }
+      );
+
+      const url = window.URL.createObjectURL(
+        new Blob([res.data])
+      );
+
+      const link =
+        document.createElement("a");
+
+      link.href = url;
+
+      link.download = `receipt-${id}.pdf`;
+
+      link.click();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // ==========================
+  // Filtered Sales
+  // ==========================
+
+  const filteredSales = sales.filter((sale) =>
+    sale.customer?.name
+      ?.toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   return (
-  <>
-    <div className="sales-page">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Sales</h1>
-          <p className="page-subtitle">
-            Manage pharmacy sales
-          </p>
+    <>
+      <div className="sales-page">
+
+        {/* ================= HEADER ================= */}
+
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">
+              Sales
+            </h1>
+
+            <p className="page-subtitle">
+              Manage pharmacy sales
+            </p>
+          </div>
+
+          <button
+            className="add-btn"
+            onClick={() => setShowModal(true)}
+          >
+            + New Sale
+          </button>
         </div>
 
-        <button
-          className="add-btn"
-          onClick={() => setShowModal(true)}
-        >
-          + New Sale
-        </button>
-      </div>
+        {/* ================= SEARCH ================= */}
 
-      <div className="table-card">
-        <table className="medicine-table">
-          <thead>
-            <tr>
-              <th>Sale ID</th>
-              <th>Customer</th>
-              <th>Medicine</th>
-              <th>Quantity</th>
-              <th>Total</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+        <div className="table-toolbar">
 
-          <tbody>
-            {sales.length === 0 ? (
+          <input
+            className="table-search"
+            placeholder="Search customer..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+          />
+
+        </div>
+
+        {/* ================= SALES TABLE ================= */}
+
+        <div className="table-card">
+
+          <table className="medicine-table">
+
+            <thead>
               <tr>
-                <td colSpan="7">
-                  No sales found
-                </td>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Actions</th>
               </tr>
-            ) : (
-              sales.flatMap((sale) =>
-                sale.sale_items?.map((item) => (
-                  <tr
-                    key={`${sale.ID}-${item.ID}`}
-                  >
+            </thead>
+
+            <tbody>
+
+              {filteredSales.length === 0 ? (
+                <tr>
+                  <td colSpan="5">
+                    No sales found
+                  </td>
+                </tr>
+              ) : (
+
+                filteredSales.map((sale) => (
+
+                  <tr key={sale.ID}>
+
                     <td>{sale.ID}</td>
 
                     <td>
                       {sale.customer?.name}
                     </td>
-
-                    <td>
-                      {item.medicine?.name}
-                    </td>
-
-                    <td>{item.quantity}</td>
 
                     <td>
                       ₦
@@ -364,13 +407,13 @@ const { ref } = useZxing({
                     </td>
 
                     <td>
+
                       <div className="sales-actions">
+
                         <button
                           className="receipt-btn"
                           onClick={() =>
-                            viewReceipt(
-                              sale.ID
-                            )
+                            viewReceipt(sale.ID)
                           }
                         >
                           Receipt
@@ -379,335 +422,346 @@ const { ref } = useZxing({
                         <button
                           className="pdf-btn"
                           onClick={() =>
-                            downloadReceipt(
-                              sale.ID
-                            )
+                            downloadReceipt(sale.ID)
                           }
                         >
                           PDF
                         </button>
+
                       </div>
+
                     </td>
+
                   </tr>
+
                 ))
-              )
-            )}
-          </tbody>
-        </table>
-      </div>
 
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal-header">
-              <h2>Create Sale</h2>
+              )}
 
-              <button
-                className="close-btn"
-                onClick={() =>
-                  setShowModal(false)
-                }
-              >
-                ×
-              </button>
-            </div>
+            </tbody>
 
-            <div className="modal-body">
-              <select
-                className="modal-input"
-                value={customerId}
-                onChange={(e) =>
-                  setCustomerId(
-                    e.target.value
-                  )
-                }
-              >
-                <option value="">
-                  Select Customer
-                </option>
+          </table>
 
-                {customers.map(
-                  (customer) => (
+        </div>
+
+        {/* ================= CREATE SALE MODAL ================= */}
+
+        {showModal && (
+
+          <div className="modal-overlay">
+
+            <div className="modal">
+
+              <div className="modal-header">
+
+                <h2>Create Sale</h2>
+
+                <button
+                  className="close-btn"
+                  onClick={() =>
+                    setShowModal(false)
+                  }
+                >
+                  ×
+                </button>
+
+              </div>
+
+              <div className="modal-body">
+
+                <select
+                  className="modal-input"
+                  value={customerId}
+                  onChange={(e) =>
+                    setCustomerId(
+                      e.target.value
+                    )
+                  }
+                >
+
+                  <option value="">
+                    Select Customer
+                  </option>
+
+                  {customers.map((customer) => (
+
                     <option
                       key={customer.ID}
-                      value={
-                        customer.ID
-                      }
+                      value={customer.ID}
                     >
                       {customer.name}
                     </option>
-                  )
-                )}
-              </select>
 
-              <input
-  className="modal-input"
-  type="text"
-  placeholder="Scan Barcode"
-  value={barcode}
-  onChange={(e) =>
-    setBarcode(e.target.value)
-  }
-  onKeyDown={(e) => {
-    if (e.key === "Enter") {
-      handleBarcodeSearch();
-    }
-  }}
-/>
+                  ))}
 
-<button
-  className="save-btn"
-  onClick={() => setShowScanner(true)}
->
-  Open Camera Scanner
-</button>
+                </select>
 
-<button
-  className="save-btn"
-  onClick={handleBarcodeSearch}
->
-  Find Medicine
-</button>
+                <div className="barcode-row">
 
-              <hr />
+                  <input
+                    className="modal-input"
+                    placeholder="Barcode"
+                    value={barcode}
+                    onChange={(e) =>
+                      setBarcode(
+                        e.target.value
+                      )
+                    }
+                  />
 
-              <select
-                className="modal-input"
-                value={
-                  currentItem.medicine_id
-                }
-                onChange={(e) =>
-                  setCurrentItem({
-                    ...currentItem,
-                    medicine_id:
-                      e.target.value,
-                  })
-                }
-              >
-                <option value="">
-                  Select Medicine
-                </option>
+                  <button
+                    className="secondary-btn"
+                    onClick={
+                      handleBarcodeSearch
+                    }
+                  >
+                    Find
+                  </button>
 
-                {medicines.map(
-                  (medicine) => (
+                </div>
+
+                <button
+                  className="scanner-btn"
+                  onClick={() =>
+                    setShowScanner(true)
+                  }
+                >
+                  📷 Open Camera Scanner
+                </button>
+
+                <select
+                  className="modal-input"
+                  value={
+                    currentItem.medicine_id
+                  }
+                  onChange={(e) =>
+                    setCurrentItem({
+                      ...currentItem,
+                      medicine_id:
+                        e.target.value,
+                    })
+                  }
+                >
+
+                  <option value="">
+                    Select Medicine
+                  </option>
+
+                  {medicines.map((medicine) => (
+
                     <option
                       key={medicine.ID}
-                      value={
-                        medicine.ID
-                      }
+                      value={medicine.ID}
                     >
-                      {medicine.name} - ₦
+                      {medicine.name}
+                      {" - ₦"}
                       {medicine.price}
                     </option>
-                  )
-                )}
-              </select>
 
-              <input
-                className="modal-input"
-                type="number"
-                placeholder="Quantity"
-                value={
-                  currentItem.quantity
-                }
-                onChange={(e) =>
-                  setCurrentItem({
-                    ...currentItem,
-                    quantity:
-                      e.target.value,
-                  })
-                }
-              />
+                  ))}
 
-              <button
-                className="save-btn"
-                onClick={addItem}
-              >
-                Add Item
-              </button>
+                </select>
 
-              {items.map(
-                (item, index) => {
-                  const medicine =
-                    medicines.find(
-                      (m) =>
-                        m.ID ===
-                        item.medicine_id
-                    );
+                <input
+                  type="number"
+                  className="modal-input"
+                  placeholder="Quantity"
+                  value={
+                    currentItem.quantity
+                  }
+                  onChange={(e) =>
+                    setCurrentItem({
+                      ...currentItem,
+                      quantity:
+                        e.target.value,
+                    })
+                  }
+                />
 
-                  return (
-                    <div
-                      key={index}
-                      style={{
-                        display:
-                          "flex",
-                        justifyContent:
-                          "space-between",
-                        alignItems:
-                          "center",
-                        marginTop:
-                          "10px",
-                        padding:
-                          "10px",
-                        border:
-                          "1px solid #ddd",
-                        borderRadius:
-                          "8px",
-                      }}
-                    >
-                      <div>
-                        <strong>
-                          {
-                            medicine?.name
+                <button
+                  className="save-btn"
+                  onClick={addItem}
+                >
+                  Add Item
+                </button>
+
+                {/* ================= CART ================= */}
+
+                <div className="cart-list">
+
+                  {items.map(
+                    (item, index) => (
+
+                      <div
+                        key={index}
+                        className="cart-item"
+                      >
+
+                        <div>
+
+                          <strong>
+                            {item.name}
+                          </strong>
+
+                          <p>
+                            Qty :
+                            {" "}
+                            {item.quantity}
+                          </p>
+
+                        </div>
+
+                        <button
+                          className="delete-btn"
+                          onClick={() =>
+                            removeItem(index)
                           }
-                        </strong>
-                        {" | Qty: "}
-                        {
-                          item.quantity
-                        }
+                        >
+                          Remove
+                        </button>
+
                       </div>
 
-                      <button
-                        className="delete-btn"
-                        onClick={() =>
-                          removeItem(
-                            index
-                          )
-                        }
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  );
-                }
-              )}
+                    )
+                  )}
+
+                </div>
+
+              </div>
+
+              <div className="modal-footer">
+
+                <button
+                  className="cancel-btn"
+                  onClick={() =>
+                    setShowModal(false)
+                  }
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="save-btn"
+                  onClick={createSale}
+                >
+                  Complete Sale
+                </button>
+
+              </div>
+
             </div>
 
-            <div className="modal-footer">
-              <button
-                className="cancel-btn"
-                onClick={() =>
-                  setShowModal(false)
-                }
-              >
-                Cancel
-              </button>
-
-              <button
-                className="save-btn"
-                onClick={createSale}
-              >
-                Complete Sale
-              </button>
-            </div>
           </div>
-        </div>
-      )}
 
-      {showScanner && (
-       <div className="modal-overlay">
-         <div
-          className="modal"
-          style={{ maxWidth: "700px" }}
-        >
-      <div className="modal-header">
-        <h2>Scan Barcode</h2>
+        )}
 
-        <button
-          className="close-btn"
-          onClick={() => setShowScanner(false)}
-        >
-          ×
-        </button>
-      </div>
+        {/* ================= SCANNER ================= */}
 
-      <div className="modal-body">
-        <p
-          style={{
-            color: "green",
-            marginBottom: "10px",
-          }}
-        >
-          Scanner Started
-        </p>
+        {showScanner && (
 
-        <p
-          style={{
-            marginBottom: "10px",
-          }}
-        >
-          Barcode: {barcode || "Waiting..."}
-        </p>
+          <div className="modal-overlay">
 
-        <video
-          ref={ref}
-          autoPlay
-          playsInline
-          muted
-          style={{
-            width: "100%",
-            height: "400px",
-            objectFit: "cover",
-            borderRadius: "10px",
-            border: "2px solid #ddd",
-          }}
-        />
-      </div>
-    </div>
-  </div>
-)}
+            <div className="scanner-modal">
 
-      {showReceipt && receipt && (
-        <div className="modal-overlay">
-          <div className="receipt-modal">
-            <div className="modal-header">
-              <h2>Pharmacy Receipt</h2>
+              <div className="modal-header">
 
-              <button
-                className="close-btn"
-                onClick={() =>
-                  setShowReceipt(false)
-                }
-              >
-                ×
-              </button>
+                <h2>
+                  Scan Barcode
+                </h2>
+
+                <button
+                  className="close-btn"
+                  onClick={() =>
+                    setShowScanner(false)
+                  }
+                >
+                  ×
+                </button>
+
+              </div>
+
+              <div className="modal-body">
+
+                <video
+                  ref={ref}
+                  className="scanner-video"
+                  autoPlay
+                  muted
+                  playsInline
+                />
+
+              </div>
+
             </div>
 
-            <div className="modal-body">
-              <p>
-                <strong>
-                  Receipt ID:
-                </strong>{" "}
-                {receipt.receipt_id}
-              </p>
-
-              <p>
-                <strong>
-                  Customer:
-                </strong>{" "}
-                {receipt.customer}
-              </p>
-
-              <p>
-                <strong>
-                  Cashier:
-                </strong>{" "}
-                {receipt.cashier}
-              </p>
-
-              <p>
-                <strong>Date:</strong>{" "}
-                {new Date(
-                  receipt.date
-                ).toLocaleString()}
-              </p>
-            </div>
           </div>
-        </div>
-      )}
-    </div>
-  </>
-);
+
+        )}
+
+        {/* ================= RECEIPT ================= */}
+
+        {showReceipt && receipt && (
+
+          <div className="modal-overlay">
+
+            <div className="receipt-modal">
+
+              <div className="modal-header">
+
+                <h2>
+                  Pharmacy Receipt
+                </h2>
+
+                <button
+                  className="close-btn"
+                  onClick={() =>
+                    setShowReceipt(false)
+                  }
+                >
+                  ×
+                </button>
+
+              </div>
+
+              <div className="modal-body">
+
+                <p>
+                  <strong>ID:</strong>
+                  {" "}
+                  {receipt.receipt_id}
+                </p>
+
+                <p>
+                  <strong>Customer:</strong>
+                  {" "}
+                  {receipt.customer}
+                </p>
+
+                <p>
+                  <strong>Cashier:</strong>
+                  {" "}
+                  {receipt.cashier}
+                </p>
+
+                <p>
+                  <strong>Date:</strong>
+                  {" "}
+                  {new Date(
+                    receipt.date
+                  ).toLocaleString()}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        )}
+
+      </div>
+    </>
+  );
 }
 
 export default Sales;

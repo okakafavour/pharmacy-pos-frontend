@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "../styles/Customers.css";
 
 function Customers() {
   const API =
@@ -115,17 +116,19 @@ function Customers() {
         </button>
       </div>
 
-      <div className="search-card">
+      <div className="table-toolbar">
         <input
-          className="search-input"
+          type="text"
+          className="table-search"
           placeholder="Search customer..."
           value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
+          onChange={(e) => setSearch(e.target.value)}
         />
-      </div>
 
+        <button className="add-btn">
+          + Add Customer
+        </button>
+      </div>
       <div className="table-card">
         <table className="medicine-table">
           <thead>

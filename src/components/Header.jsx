@@ -1,4 +1,6 @@
-function Header() {
+import "../styles/header.css";
+
+function Header({ setSidebarOpen }) {
   const user = {
     name: localStorage.getItem("name") || "Admin",
     role: localStorage.getItem("role") || "Administrator",
@@ -16,30 +18,44 @@ function Header() {
 
   return (
     <header className="header">
+
       <div className="header-left">
+
+        <button
+          className="menu-btn"
+          onClick={() => setSidebarOpen(true)}
+        >
+          ☰
+        </button>
+
         <input
           type="text"
-          placeholder="Search medicines, customers..."
+          placeholder="Search medicines..."
           className="search-box"
         />
+
       </div>
 
       <div className="header-right">
+
         <button className="icon-btn">
           🔔
         </button>
 
         <div className="user-info">
+
           <div className="avatar">
             {user.name.charAt(0).toUpperCase()}
           </div>
 
-          <div>
+          <div className="user-details">
             <h4>{user.name}</h4>
-            <p style={{ textTransform: "capitalize" }}>
+
+            <p className="user-role">
               {user.role}
             </p>
           </div>
+
         </div>
 
         <button
@@ -48,7 +64,9 @@ function Header() {
         >
           Logout
         </button>
+
       </div>
+
     </header>
   );
 }

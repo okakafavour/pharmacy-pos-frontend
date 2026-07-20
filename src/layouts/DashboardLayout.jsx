@@ -1,37 +1,51 @@
 import { Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/SideBar";
 import Header from "../components/Header";
 
 function DashboardLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(
+    window.innerWidth > 768
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () =>
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+  }, []);
+
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        background: "#f5f7fb",
-      }}
-    >
-      <Sidebar />
+    <div className="layout">
 
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Header />
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
 
-        <div
-          style={{
-            flex: 1,
-            padding: "20px",
-            overflowY: "auto",
-          }}
-        >
+      <div className="main-content">
+
+        <Header
+          setSidebarOpen={setSidebarOpen}
+        />
+
+        <div className="page-content">
           <Outlet />
         </div>
+
       </div>
+
     </div>
   );
 }
