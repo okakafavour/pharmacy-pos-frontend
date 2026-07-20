@@ -6,61 +6,53 @@ import "../styles/login.css";
 function Login() {
   const navigate = useNavigate();
 
+  const API =
+    "https://pharmacy-pos-backend-some.onrender.com";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (loading) return;
+
+    if (!email.trim() || !password.trim()) {
+      alert("Please enter your email and password.");
+      return;
+    }
+
     try {
-      const res = await axios.post(
-        "https://pharmacy-pos-backend-some.onrender.com/login",
-        {
-          email,
-          password,
-        }
-      );
+      setLoading(true);
 
-      // Save auth data
-      localStorage.setItem(
-        "token",
-        res.data.token
-      );
+      const res = await axios.post(`${API}/login`, {
+        email: email.trim(),
+        password,
+      });
 
-      localStorage.setItem(
-        "role",
-        res.data.user.role
-      );
-
-      localStorage.setItem(
-        "name",
-        res.data.user.name
-      );
-
-      localStorage.setItem(
-        "email",
-        res.data.user.email
-      );
-
-      localStorage.setItem(
-        "userId",
-        res.data.user.id
-      );
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("role", res.data.user.role);
+      localStorage.setItem("name", res.data.user.name);
+      localStorage.setItem("email", res.data.user.email);
+      localStorage.setItem("userId", res.data.user.id);
 
       navigate("/dashboard");
     } catch (err) {
+      console.error(err);
+
       alert(
         err.response?.data?.error ||
-          "Login Failed"
+          err.response?.data?.message ||
+          "Unable to login. Please try again."
       );
-      console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-page">
-
       {/* LEFT PANEL */}
       <div className="login-left">
-
         <span className="badge">
           💊 Prescription Ready
         </span>
@@ -88,30 +80,25 @@ function Login() {
         <div className="floating-badge right-badge">
           ✅ Sale Complete
         </div>
-
       </div>
 
       {/* RIGHT PANEL */}
       <div className="login-right">
-
         <div className="login-card">
-
           <div className="logo-area">
             <h2>💊 Mdawa</h2>
-            <span>
-              PHARMACY MANAGEMENT SYSTEM
-            </span>
+            <span>PHARMACY MANAGEMENT SYSTEM</span>
           </div>
 
-          <div className="tabs">
+          {/* <div className="tabs">
             <button className="active-tab">
               Sign In
             </button>
 
-            <button>
+            <button disabled>
               Register
             </button>
-          </div>
+          </div> */}
 
           <h1 className="welcome">
             Welcome back 👋
@@ -123,7 +110,6 @@ function Login() {
           </p>
 
           <div className="roles">
-
             <div className="role active">
               👨‍⚕️
               <h4>Admin</h4>
@@ -147,7 +133,6 @@ function Login() {
               <h4>Manager</h4>
               <small>Reports</small>
             </div>
-
           </div>
 
           <label className="login-label">
@@ -158,10 +143,16 @@ function Login() {
             className="login-input"
             type="email"
             placeholder="Enter your email"
+            autoComplete="email"
             value={email}
             onChange={(e) =>
               setEmail(e.target.value)
             }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleLogin();
+              }
+            }}
           />
 
           <label className="login-label">
@@ -172,6 +163,7 @@ function Login() {
             className="login-input"
             type="password"
             placeholder="Enter your password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) =>
               setPassword(e.target.value)
@@ -184,16 +176,18 @@ function Login() {
           />
 
           <button
-            className="login-button"
+            className={`login-button ${
+              loading ? "loading" : ""
+            }`}
             onClick={handleLogin}
+            disabled={loading}
           >
-            Sign In
+            {loading
+              ? "Signing In..."
+              : "Sign In"}
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }
