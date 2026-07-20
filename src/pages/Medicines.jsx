@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 import "../styles/medicines.css";
 
 function Medicines() {
-  const API =
-    "https://pharmacy-pos-backend-some.onrender.com";
-
   const [medicines, setMedicines] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
@@ -19,33 +16,22 @@ function Medicines() {
     expire_date: "",
   });
 
-  const fetchMedicines = async () => {
-    try {
-      const token = localStorage.getItem("token");
+    const fetchMedicines = async () => {
+      try {
+        const res = await api.get("/medicines");
 
-      const res = await axios.get(
-        `${API}/medicines`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+        setMedicines(res.data.data || []);
+      } catch (error) {
+        console.error("Failed to fetch medicines:", error);
+      }
+    };
 
-      setMedicines(res.data.data || []);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchMedicines();
-  }, []);
+    useEffect(() => {
+      fetchMedicines();
+    }, []);
 
   const handleAddMedicine = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       if (
         !formData.name ||
         !formData.barcode ||
@@ -67,16 +53,7 @@ function Medicines() {
         expire_date: `${formData.expire_date}T00:00:00Z`,
       };
 
-      await axios.post(
-        `${API}/medicines`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const res = await api.post("/medicines", payload);
 
       alert("Medicine added successfully");
 
@@ -105,17 +82,7 @@ function Medicines() {
 
   const deleteMedicine = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-
-      await axios.delete(
-        `${API}/medicines/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const res = await api.delete(`/medicines/${id}`);
       fetchMedicines();
     } catch (error) {
       console.log(error);

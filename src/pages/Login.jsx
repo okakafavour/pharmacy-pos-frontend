@@ -1,13 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/api";
 import "../styles/login.css";
 
 function Login() {
   const navigate = useNavigate();
-
-  const API =
-    "https://pharmacy-pos-backend-some.onrender.com";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +21,7 @@ function Login() {
     try {
       setLoading(true);
 
-      const res = await axios.post(`${API}/login`, {
+      const res = await api.post("/login", {
         email: email.trim(),
         password,
       });

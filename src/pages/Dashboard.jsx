@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/api";
 
 function Dashboard() {
   const navigate = useNavigate();
-
-  const API =
-    "https://pharmacy-pos-backend-some.onrender.com";
 
   const [stats, setStats] = useState({
     total_medicines: 0,
@@ -21,84 +18,54 @@ function Dashboard() {
   const [expiringSoon, setExpiringSoon] =
     useState([]);
 
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  const fetchDashboardStats = async () => {
+  try {
+    const res = await api.get("/dashboard/stats");
 
-      const res = await axios.get(
-        `${API}/dashboard/stats`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    setStats(res.data.data || {
+      total_medicines: 0,
+      total_sales: 0,
+      low_stock_count: 0,
+      expired_count: 0,
+      total_suppliers: 0,
+    });
 
-      setStats(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  } catch (error) {
+    console.error("Failed to fetch dashboard stats:", error);
+  }
+};
   const fetchLowStock = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/medicines/low-stock`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const res = await api.get("/medicines/low-stock");
       setLowStock(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch low stock medicines:", error);
     }
   };
 
   const fetchExpired = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/medicines/expired`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      
+      const res = await api.get("/medicines/expired");
 
       setExpired(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch expired medicines:", error);
     }
   };
 
   const fetchExpiringSoon = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/medicines/expiring-soon`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.get("/medicines/expiring-soon");
 
       setExpiringSoon(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch expiring soon medicines:", error);
     }
   };
 
   useEffect(() => {
-    fetchStats();
+    fetchDashboardStats();
     fetchLowStock();
     fetchExpired();
     fetchExpiringSoon();

@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 import "../styles/Customers.css";
 
 function Customers() {
-  const API =
-    "https://pharmacy-pos-backend-some.onrender.com";
-
   const [customers, setCustomers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
@@ -18,20 +15,11 @@ function Customers() {
 
   const fetchCustomers = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/customers`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.get("/customers");
 
       setCustomers(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch customers:", error);
     }
   };
 
@@ -40,49 +28,38 @@ function Customers() {
   }, []);
 
   const handleAddCustomer = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      if (!formData.name) {
-        alert("Customer name is required");
-        return;
-      }
-
-      await axios.post(
-        `${API}/customers`,
-        {
-          name: formData.name,
-          phone: formData.phone,
-          address: formData.address,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      alert("Customer added successfully");
-
-      setFormData({
-        name: "",
-        phone: "",
-        address: "",
-      });
-
-      setShowModal(false);
-
-      fetchCustomers();
-    } catch (error) {
-      console.log(error);
-
-      alert(
-        error.response?.data?.error ||
-          "Failed to add customer"
-      );
+  try {
+    if (!formData.name.trim()) {
+      alert("Customer name is required");
+      return;
     }
-  };
+
+    await api.post("/customers", {
+      name: formData.name.trim(),
+      phone: formData.phone.trim(),
+      address: formData.address.trim(),
+    });
+
+    alert("Customer added successfully");
+
+    setFormData({
+      name: "",
+      phone: "",
+      address: "",
+    });
+
+    setShowModal(false);
+
+    fetchCustomers();
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.error ||
+      "Failed to add customer"
+    );
+  }
+};
 
   const filteredCustomers = customers.filter(
     (customer) =>

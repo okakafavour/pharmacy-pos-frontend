@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 import "../styles/reports.css";
 
 function Reports() {
@@ -10,41 +10,24 @@ function Reports() {
   const [dailySales, setDailySales] =
     useState(null);
 
-  const fetchStats = async () => {
+  
+  const fetchReports = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const res = await api.get("/dashboard/stats");
 
-      const res = await axios.get(
-        `${API}/dashboard/stats`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setStats(res.data);
+      setStats(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch medicines:", error);
     }
   };
 
   const fetchDailySales = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/reports/daily-sales`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.get("reports/daily-sales");
 
       setDailySales(res.data);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch daily sales:", error);
     }
   };
 

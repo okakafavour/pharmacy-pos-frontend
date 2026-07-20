@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 
 function Restocks() {
-  const API =
-    "https://pharmacy-pos-backend-some.onrender.com";
-
   const [restocks, setRestocks] = useState([]);
   const [medicines, setMedicines] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -20,58 +17,31 @@ function Restocks() {
 
   const fetchRestocks = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/restocks`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.get("/restocks");
 
       setRestocks(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch medicines:", error);
     }
   };
 
   const fetchMedicines = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/medicines`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.get("/medicines");
 
       setMedicines(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch medicines:", error);
     }
   };
 
   const fetchSuppliers = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/suppliers`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.get("/suppliers");
 
       setSuppliers(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch suppliers:", error);
     }
   };
 
@@ -82,61 +52,43 @@ function Restocks() {
   }, []);
 
   const createRestock = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      if (
-        !formData.medicine_id ||
-        !formData.supplier_id ||
-        !formData.quantity
-      ) {
-        alert("All fields are required");
-        return;
-      }
-
-      await axios.post(
-        `${API}/restocks`,
-        {
-          medicine_id: Number(
-            formData.medicine_id
-          ),
-          supplier_id: Number(
-            formData.supplier_id
-          ),
-          quantity: Number(
-            formData.quantity
-          ),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type":
-              "application/json",
-          },
-        }
-      );
-
-      alert("Medicine restocked successfully");
-
-      setFormData({
-        medicine_id: "",
-        supplier_id: "",
-        quantity: "",
-      });
-
-      setShowModal(false);
-
-      fetchRestocks();
-      fetchMedicines();
-    } catch (error) {
-      console.log(error);
-
-      alert(
-        error.response?.data?.error ||
-          "Failed to create restock"
-      );
+  try {
+    if (
+      !formData.medicine_id ||
+      !formData.supplier_id ||
+      !formData.quantity
+    ) {
+      alert("All fields are required");
+      return;
     }
-  };
+
+    await api.post("/restocks", {
+      medicine_id: Number(formData.medicine_id),
+      supplier_id: Number(formData.supplier_id),
+      quantity: Number(formData.quantity),
+    });
+
+    alert("Medicine restocked successfully");
+
+    setFormData({
+      medicine_id: "",
+      supplier_id: "",
+      quantity: "",
+    });
+
+    setShowModal(false);
+
+    fetchRestocks();
+    fetchMedicines();
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.error ||
+      "Failed to create restock"
+    );
+  }
+};
 
   const filteredRestocks = restocks.filter(
     (restock) =>

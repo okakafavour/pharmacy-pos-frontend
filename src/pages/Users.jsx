@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 
 function Users() {
-  const API =
-    "https://pharmacy-pos-backend-some.onrender.com";
-
+  
   const [users, setUsers] = useState([]);
 
   const [showModal, setShowModal] =
@@ -20,21 +18,11 @@ function Users() {
 
   const fetchUsers = async () => {
     try {
-      const token =
-        localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/users`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.get("/users");
 
       setUsers(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch users:", error);
     }
   };
 
@@ -43,41 +31,44 @@ function Users() {
   }, []);
 
   const createUser = async () => {
-    try {
-      const token =
-        localStorage.getItem("token");
-
-      await axios.post(
-        `${API}/users`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      alert("User created successfully");
-
-      setShowModal(false);
-
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-        role: "cashier",
-      });
-
-      fetchUsers();
-    } catch (error) {
-      console.log(error);
-
-      alert(
-        error.response?.data?.error ||
-          "Failed to create user"
-      );
+  try {
+    if (
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.password.trim()
+    ) {
+      alert("Please fill all required fields.");
+      return;
     }
-  };
+
+    await api.post("/users", {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      password: formData.password,
+      role: formData.role,
+    });
+
+    alert("User created successfully");
+
+    setShowModal(false);
+
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      role: "cashier",
+    });
+
+    fetchUsers();
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.error ||
+      "Failed to create user"
+    );
+  }
+};
 
   return (
     <div className="users-page">

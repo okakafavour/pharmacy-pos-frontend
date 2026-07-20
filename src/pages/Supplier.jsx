@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 
 function Supplier() {
-  const API =
-    "https://pharmacy-pos-backend-some.onrender.com";
-
   const [suppliers, setSuppliers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
@@ -18,20 +15,11 @@ function Supplier() {
 
   const fetchSuppliers = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${API}/suppliers`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.get("/suppliers");
 
       setSuppliers(res.data.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to fetch medicines:", error);
     }
   };
 
@@ -40,51 +28,40 @@ function Supplier() {
   }, []);
 
   const handleAddSupplier = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      if (!formData.name) {
-        alert("Supplier name is required");
-        return;
-      }
-
-      await axios.post(
-        `${API}/suppliers`,
-        {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      alert("Supplier added successfully");
-
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        address: "",
-      });
-
-      setShowModal(false);
-
-      fetchSuppliers();
-    } catch (error) {
-      console.log(error);
-
-      alert(
-        error.response?.data?.error ||
-          "Failed to add supplier"
-      );
+  try {
+    if (!formData.name.trim()) {
+      alert("Supplier name is required");
+      return;
     }
-  };
+
+    await api.post("/suppliers", {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      address: formData.address.trim(),
+    });
+
+    alert("Supplier added successfully");
+
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+    });
+
+    setShowModal(false);
+
+    fetchSuppliers();
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.error ||
+      "Failed to add supplier"
+    );
+  }
+};
 
   const filteredSuppliers = suppliers.filter(
     (supplier) =>
@@ -121,9 +98,9 @@ function Supplier() {
         </button>
       </div>
 
-      <div className="search-card">
+      <div className="table-toolbar">
         <input
-          className="search-input"
+          className="table-search"
           placeholder="Search supplier..."
           value={search}
           onChange={(e) =>

@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 import { useZxing } from "react-zxing";
 import "../styles/sales.css";
 
 function Sales() {
-  const API = "https://pharmacy-pos-backend-some.onrender.com";
-
   // ==========================
   // State
   // ==========================
@@ -33,17 +31,6 @@ function Sales() {
 
   const [items, setItems] = useState([]);
 
-  // ==========================
-  // API
-  // ==========================
-
-  const token = localStorage.getItem("token");
-
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
 
   // ==========================
   // Fetch Sales
@@ -51,14 +38,11 @@ function Sales() {
 
   const fetchSales = async () => {
     try {
-      const res = await axios.get(
-        `${API}/sales`,
-        config
-      );
+      const res = await api.get("/sales");
 
       setSales(res.data.data || []);
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.error("Failed to fetch sales:", error);
     }
   };
 
@@ -68,14 +52,11 @@ function Sales() {
 
   const fetchCustomers = async () => {
     try {
-      const res = await axios.get(
-        `${API}/customers`,
-        config
-      );
+     const res = await api.get("/customers");
 
       setCustomers(res.data.data || []);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch customers:", err);
     }
   };
 
@@ -85,14 +66,11 @@ function Sales() {
 
   const fetchMedicines = async () => {
     try {
-      const res = await axios.get(
-        `${API}/medicines`,
-        config
-      );
+      const res = await api.get("/medicines");
 
       setMedicines(res.data.data || []);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch medicines:", err);
     }
   };
 
